@@ -10,7 +10,7 @@ import (
 
 var inputReader = bufio.NewReader(os.Stdin)
 
-var toDoList ToDoList.ToDoList
+var toDoList ToDoList.ToDoListDB
 
 type dialogueState int
 
