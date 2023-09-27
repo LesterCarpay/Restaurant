@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Restaurant/ToDoList"
 	"bufio"
 	"fmt"
 	"os"
@@ -9,7 +10,7 @@ import (
 
 var inputReader = bufio.NewReader(os.Stdin)
 
-var toDoList []string
+var toDoList ToDoList.ToDoList
 
 type dialogueState int
 
@@ -44,7 +45,7 @@ func showChoiceMenu(options []string) int {
 
 func showHome() dialogueState {
 	fmt.Println("Welcome, your to-do list currently contains the following items:")
-	for _, v := range toDoList {
+	for _, v := range toDoList.GetAllItems() {
 		fmt.Println("-", v)
 	}
 	fmt.Println("What would you like to do?")
@@ -69,7 +70,7 @@ func showAdd() dialogueState {
 		fmt.Println("Failed to add your new item, returning to home screen.")
 		return HOME
 	}
-	toDoList = append(toDoList, newItem)
+	toDoList.AddItem(newItem)
 	println("Added the item \"" + newItem + "\" to your list, do you want to add another item?")
 	var chosenOption int
 	chosenOption = showChoiceMenu([]string{"Yes", "No"})
@@ -83,10 +84,10 @@ func showAdd() dialogueState {
 
 func showDelete() dialogueState {
 	fmt.Println("Which item would you like to delete?")
-	i := showChoiceMenu(toDoList) - 1
-	item := toDoList[i]
-	toDoList = append(toDoList[:i], toDoList[i+1:]...)
-	fmt.Println("Succesfully removed item \"", item, "\".")
+	i := showChoiceMenu(toDoList.GetAllItems()) - 1
+	item := toDoList.GetItem(i)
+	toDoList.DeleteItem(i)
+	fmt.Println("Successfully removed item \"", item, "\".")
 	fmt.Println("Would you like to delete another element?")
 	chosenOption := showChoiceMenu([]string{"Yes", "No"})
 	switch chosenOption {
