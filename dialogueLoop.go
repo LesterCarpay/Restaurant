@@ -1,7 +1,6 @@
 package main
 
 import (
-	"Restaurant/ToDoList"
 	"bufio"
 	"fmt"
 	"os"
@@ -10,7 +9,7 @@ import (
 
 var inputReader = bufio.NewReader(os.Stdin)
 
-var toDoList ToDoList.ToDoListDB
+var toDoList ToDoListDB
 
 type dialogueState int
 
@@ -83,11 +82,13 @@ func showAdd() dialogueState {
 }
 
 func showDelete() dialogueState {
+	items := toDoList.GetAllItems()
+	indices := toDoList.GetIDs()
 	fmt.Println("Which item would you like to delete?")
-	i := showChoiceMenu(toDoList.GetAllItems()) - 1
-	item := toDoList.GetItem(i)
-	toDoList.DeleteItem(i)
-	fmt.Println("Successfully removed item \"", item, "\".")
+	choice := showChoiceMenu(items) - 1
+	id, _ := strconv.Atoi(indices[choice])
+	toDoList.DeleteItem(id)
+	fmt.Println("Successfully removed item.")
 	fmt.Println("Would you like to delete another element?")
 	chosenOption := showChoiceMenu([]string{"Yes", "No"})
 	switch chosenOption {
@@ -100,6 +101,26 @@ func showDelete() dialogueState {
 
 func main() {
 	var state = HOME
+
+	toDoList.ConnectToDatabase()
+
+	if !toDoList.TableExists() {
+		fmt.Println("Todos table not found, creating it.")
+		toDoList.CreateToDosTable()
+	}
+
+	if !toDoList.ColumnsExist() {
+		fmt.Println("Todos table found but necessary columns don't exist.")
+		fmt.Println("Do you wish to delete the table and create a new one?")
+		if showChoiceMenu([]string{"Yes", "No, quit"}) == 1 {
+			toDoList.CreateToDosTable()
+		} else {
+			state = QUIT
+		}
+	}
+
+	fmt.Println(toDoList.GetAllItems())
+
 	for state != QUIT {
 		switch state {
 		case HOME:
