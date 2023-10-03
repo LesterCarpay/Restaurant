@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"slices"
 )
 
@@ -14,43 +13,12 @@ type Table struct {
 }
 
 type Database struct {
-	tables []Table
-	sqlDB  *sql.DB
+	sqlDB *sql.DB
 }
 
-func scanWithDefault(name string, defaultValue string) string {
-	fmt.Print(name + " [" + defaultValue + "]:")
-	var result string
-	_, err := fmt.Scanln(&result)
-	if err != nil || result == "" {
-		return defaultValue
-	}
-	return result
-}
-
-func getConnectionString() string {
-	var password string
-
-	host := scanWithDefault("Host", "localhost")
-	dbName := scanWithDefault("Database", "todos")
-	username := scanWithDefault("Username", "postgres")
-	fmt.Print("Password:")
-	_, err := fmt.Scanln(&password)
-	if err != nil {
-		fmt.Println("Incorrect password.")
-		log.Fatalln(err)
-	}
-	return "postgresql://" +
-		username + ":" +
-		password + "@" +
-		host + "/" +
-		dbName + "?sslmode=disable"
-}
-
-func (db *Database) ConnectToDatabase() error {
+func (db *Database) ConnectToDatabase(connectionString string) error {
 	fmt.Println("Loading Database...")
 
-	connectionString := getConnectionString()
 	sqlDB, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		return err
@@ -107,9 +75,9 @@ func (db *Database) TableExists(table Table) (bool, error) {
 }
 
 func (db *Database) ColumnsExist(table Table) (bool, error) {
-	result, err := db.sqlDB.Query("SELECT column_name " +
-		"FROM information_schema.columns " +
-		"WHERE TABLE_NAME = 'todos'")
+	result, err := db.sqlDB.Query(fmt.Sprintf("SELECT column_name "+
+		"FROM information_schema.columns "+
+		"WHERE TABLE_NAME = '%v'", table.Name))
 	if err != nil {
 		return false, err
 	}
@@ -169,4 +137,8 @@ func (db *Database) GetColumnValues(table Table, column string) ([]string, error
 		items = append(items, item)
 	}
 	return items, nil
+}
+
+func (db *Database) GetTableIndices(table Table) ([]string, error) {
+	return db.GetColumnValues(table, table.IDColumnName)
 }
