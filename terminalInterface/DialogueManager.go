@@ -15,6 +15,9 @@ const (
 	manageIngredients dialogueState = 2
 	addIngredient     dialogueState = 3
 	deleteIngredient  dialogueState = 4
+	manageMenuItems   dialogueState = 5
+	addMenuItem       dialogueState = 6
+	deleteMenuItem    dialogueState = 7
 )
 
 type dialogueManager struct {
@@ -84,5 +87,11 @@ func (dialogueManager *dialogueManager) showNextWindow() {
 		dialogueManager.showIngredientAdd()
 	case deleteIngredient:
 		dialogueManager.showIngredientDelete()
+	case manageMenuItems:
+		dialogueManager.showManageMenuItems()
+	case addMenuItem:
+		dialogueManager.showMenuItemAdd()
+	case deleteMenuItem:
+		dialogueManager.showMenuItemDelete()
 	}
 }

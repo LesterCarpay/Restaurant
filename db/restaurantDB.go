@@ -25,11 +25,13 @@ func (RestaurantDataBase RestaurantDataBase) GetTables() []Table {
 	return []Table{RestaurantDataBase.Ingredients, RestaurantDataBase.MenuItems}
 }
 
+//Ingredient methods
+
 func (RestaurantDataBase RestaurantDataBase) GetIngredients() ([]string, error) {
 	return RestaurantDataBase.Database.GetColumnValues(RestaurantDataBase.Ingredients, "ingredient_name")
 }
 
-func (RestaurantDataBase RestaurantDataBase) GetIngredientIndices() ([]string, error) {
+func (RestaurantDataBase RestaurantDataBase) GetIngredientIDs() ([]string, error) {
 	return RestaurantDataBase.Database.GetTableIndices(RestaurantDataBase.Ingredients)
 }
 
@@ -42,3 +44,31 @@ func (RestaurantDataBase RestaurantDataBase) AddIngredient(newIngredient string)
 func (RestaurantDataBase RestaurantDataBase) DeleteIngredient(id int) error {
 	return RestaurantDataBase.Database.DeleteItem(RestaurantDataBase.Ingredients, id)
 }
+
+//Menu item methods
+
+func (RestaurantDataBase RestaurantDataBase) GetMenuItems() ([]string, error) {
+	return RestaurantDataBase.Database.GetColumnValues(RestaurantDataBase.MenuItems, "menu_item_name")
+}
+
+func (RestaurantDataBase RestaurantDataBase) GetMenuItemDescriptions() ([]string, error) {
+	return RestaurantDataBase.Database.GetColumnValues(RestaurantDataBase.MenuItems, "menu_item_description")
+}
+
+func (RestaurantDataBase RestaurantDataBase) GetMenuItemIDs() ([]string, error) {
+	return RestaurantDataBase.Database.GetColumnValues(RestaurantDataBase.MenuItems, "menu_item_id")
+}
+
+func (RestaurantDataBase RestaurantDataBase) AddMenuItem(newItemName string, newItemDescription string) error {
+	err := RestaurantDataBase.Database.AddRowToTable(RestaurantDataBase.MenuItems,
+		map[string]string{"menu_item_name": newItemName, "menu_item_description": newItemDescription})
+	return err
+}
+
+func (RestaurantDataBase RestaurantDataBase) DeleteMenuItem(id int) error {
+	return RestaurantDataBase.Database.DeleteItem(RestaurantDataBase.MenuItems, id)
+}
+
+//func (RestaurantDataBase RestaurantDataBase) ChangeMenuItemDescription(id int) error {
+//	return RestaurantDataBase.Database.DeleteItem(RestaurantDataBase.MenuItems, id)
+//}
