@@ -1,9 +1,10 @@
 package db
 
 type RestaurantDataBase struct {
-	Database    Database
-	Ingredients Table
-	MenuItems   Table
+	Database            Database
+	Ingredients         Table
+	MenuItems           Table
+	MenuItemIngredients Table
 }
 
 func GetRestaurantDatabase(connectionString string) (RestaurantDataBase, error) {
@@ -17,6 +18,11 @@ func GetRestaurantDatabase(connectionString string) (RestaurantDataBase, error) 
 		IDColumnName: "menu_item_id",
 		OtherColumns: map[string]string{"menu_item_name": "text",
 			"menu_item_description": "text"}}
+	RestaurantDataBase.MenuItemIngredients = Table{
+		Name:         "menu_item_ingredients",
+		IDColumnName: "menu_item_ingredient_id",
+		OtherColumns: map[string]string{"menu_item_id": "INT",
+			"ingredient_id": "INT"}}
 	err := RestaurantDataBase.Database.ConnectToDatabase(connectionString)
 	return RestaurantDataBase, err
 }
@@ -69,6 +75,7 @@ func (RestaurantDataBase RestaurantDataBase) DeleteMenuItem(id int) error {
 	return RestaurantDataBase.Database.DeleteItem(RestaurantDataBase.MenuItems, id)
 }
 
-//func (RestaurantDataBase RestaurantDataBase) ChangeMenuItemDescription(id int) error {
-//	return RestaurantDataBase.Database.DeleteItem(RestaurantDataBase.MenuItems, id)
-//}
+func (RestaurantDataBase RestaurantDataBase) ChangeMenuItemDescription(id int, newValue string) error {
+	return RestaurantDataBase.Database.ChangeRowValue(RestaurantDataBase.MenuItems,
+		"menu_item_description", id, newValue)
+}

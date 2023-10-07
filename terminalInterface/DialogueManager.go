@@ -10,14 +10,15 @@ import (
 type dialogueState int
 
 const (
-	quit              dialogueState = 0
-	home              dialogueState = 1
-	manageIngredients dialogueState = 2
-	addIngredient     dialogueState = 3
-	deleteIngredient  dialogueState = 4
-	manageMenuItems   dialogueState = 5
-	addMenuItem       dialogueState = 6
-	deleteMenuItem    dialogueState = 7
+	quit                      dialogueState = 0
+	home                      dialogueState = 1
+	manageIngredients         dialogueState = 2
+	addIngredient             dialogueState = 3
+	deleteIngredient          dialogueState = 4
+	manageMenuItems           dialogueState = 5
+	addMenuItem               dialogueState = 6
+	deleteMenuItem            dialogueState = 7
+	changeMenuItemDescription dialogueState = 8
 )
 
 type dialogueManager struct {
@@ -93,5 +94,7 @@ func (dialogueManager *dialogueManager) showNextWindow() {
 		dialogueManager.showMenuItemAdd()
 	case deleteMenuItem:
 		dialogueManager.showMenuItemDelete()
+	case changeMenuItemDescription:
+		dialogueManager.showMenuItemChangeDescription()
 	}
 }

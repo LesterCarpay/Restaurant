@@ -111,12 +111,14 @@ func (dialogueManager *dialogueManager) showManageMenuItems() {
 	}
 	fmt.Println("What would you like to do?")
 	chosenOption := showChoiceMenu([]string{"Add menu items",
-		"Delete menu items", "Return home"})
+		"Delete menu items", "Change menu item description", "Return home"})
 	switch chosenOption {
 	case 1:
 		dialogueManager.CurrentState = addMenuItem
 	case 2:
 		dialogueManager.CurrentState = deleteMenuItem
+	case 3:
+		dialogueManager.CurrentState = changeMenuItemDescription
 	default:
 		dialogueManager.CurrentState = home
 	}
@@ -160,6 +162,41 @@ func (dialogueManager *dialogueManager) showMenuItemDelete() {
 	handleError(err)
 	fmt.Println("Successfully removed item.")
 	fmt.Println("Would you like to delete another item?")
+	chosenOption = showChoiceMenu([]string{"Yes", "No"})
+	if chosenOption != 1 {
+		dialogueManager.CurrentState = home
+	}
+}
+
+func (dialogueManager *dialogueManager) showMenuItemChangeDescription() {
+	items, err := dialogueManager.RestaurantDataBase.GetMenuItems()
+	handleError(err)
+	if len(items) < 1 {
+		fmt.Println("No menu item descriptions to change. Returning home.")
+		dialogueManager.CurrentState = home
+		return
+	}
+	ids, err := dialogueManager.RestaurantDataBase.GetMenuItemIDs()
+	handleError(err)
+	descriptions, err := dialogueManager.RestaurantDataBase.GetMenuItemDescriptions()
+	handleError(err)
+	fmt.Println("Which menu item description you like to change?")
+	var namesWithDescriptions []string
+
+	for i := 0; i < len(items); i++ {
+		namesWithDescriptions = append(namesWithDescriptions, items[i]+": "+descriptions[i])
+	}
+
+	chosenOption := showChoiceMenu(namesWithDescriptions) - 1
+	id, err := strconv.Atoi(ids[chosenOption])
+	handleError(err)
+
+	fmt.Println("New menu item description:")
+	newIngredientDescription := getUserInput()
+	err = dialogueManager.RestaurantDataBase.ChangeMenuItemDescription(id, newIngredientDescription)
+	handleError(err)
+	fmt.Println("Successfully changed menu item description.")
+	fmt.Println("Would you change another menu item description?")
 	chosenOption = showChoiceMenu([]string{"Yes", "No"})
 	if chosenOption != 1 {
 		dialogueManager.CurrentState = home

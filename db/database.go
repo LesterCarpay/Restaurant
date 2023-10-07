@@ -142,3 +142,12 @@ func (db *Database) GetColumnValues(table Table, column string) ([]string, error
 func (db *Database) GetTableIndices(table Table) ([]string, error) {
 	return db.GetColumnValues(table, table.IDColumnName)
 }
+
+func (db *Database) ChangeRowValue(table Table, col string, id int, newValue string) error {
+	_, err := db.sqlDB.Exec(fmt.Sprintf("UPDATE %v SET %v = '%v' WHERE %v = %v",
+		table.Name, col, newValue, table.IDColumnName, id))
+	if err != nil {
+		return err
+	}
+	return nil
+}
