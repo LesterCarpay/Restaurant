@@ -1,5 +1,10 @@
 package db
 
+import (
+	"fmt"
+	"strconv"
+)
+
 type RestaurantDataBase struct {
 	Database            Database
 	Ingredients         Table
@@ -27,55 +32,77 @@ func GetRestaurantDatabase(connectionString string) (RestaurantDataBase, error) 
 	return RestaurantDataBase, err
 }
 
-func (RestaurantDataBase RestaurantDataBase) GetTables() []Table {
-	return []Table{RestaurantDataBase.Ingredients, RestaurantDataBase.MenuItems}
+func (restaurantDataBase RestaurantDataBase) GetTables() []Table {
+	return []Table{restaurantDataBase.Ingredients,
+		restaurantDataBase.MenuItems,
+		restaurantDataBase.MenuItemIngredients}
 }
 
 //Ingredient methods
 
-func (RestaurantDataBase RestaurantDataBase) GetIngredients() ([]string, error) {
-	return RestaurantDataBase.Database.GetColumnValues(RestaurantDataBase.Ingredients, "ingredient_name")
+func (restaurantDataBase RestaurantDataBase) GetIngredients() ([]string, error) {
+	return restaurantDataBase.Database.GetColumnValues(restaurantDataBase.Ingredients, "ingredient_name")
 }
 
-func (RestaurantDataBase RestaurantDataBase) GetIngredientIDs() ([]string, error) {
-	return RestaurantDataBase.Database.GetTableIndices(RestaurantDataBase.Ingredients)
+func (restaurantDataBase RestaurantDataBase) GetIngredientIDs() ([]string, error) {
+	return restaurantDataBase.Database.GetTableIndices(restaurantDataBase.Ingredients)
 }
 
-func (RestaurantDataBase RestaurantDataBase) AddIngredient(newIngredient string) error {
-	err := RestaurantDataBase.Database.AddRowToTable(RestaurantDataBase.Ingredients,
+func (restaurantDataBase RestaurantDataBase) AddIngredient(newIngredient string) error {
+	err := restaurantDataBase.Database.AddRowToTable(restaurantDataBase.Ingredients,
 		map[string]string{"ingredient_name": newIngredient})
 	return err
 }
 
-func (RestaurantDataBase RestaurantDataBase) DeleteIngredient(id int) error {
-	return RestaurantDataBase.Database.DeleteItem(RestaurantDataBase.Ingredients, id)
+func (restaurantDataBase RestaurantDataBase) DeleteIngredient(id int) error {
+	return restaurantDataBase.Database.DeleteItem(restaurantDataBase.Ingredients, id)
 }
 
 //Menu item methods
 
-func (RestaurantDataBase RestaurantDataBase) GetMenuItems() ([]string, error) {
-	return RestaurantDataBase.Database.GetColumnValues(RestaurantDataBase.MenuItems, "menu_item_name")
+func (restaurantDataBase RestaurantDataBase) GetMenuItems() ([]string, error) {
+	return restaurantDataBase.Database.GetColumnValues(restaurantDataBase.MenuItems, "menu_item_name")
 }
 
-func (RestaurantDataBase RestaurantDataBase) GetMenuItemDescriptions() ([]string, error) {
-	return RestaurantDataBase.Database.GetColumnValues(RestaurantDataBase.MenuItems, "menu_item_description")
+func (restaurantDataBase RestaurantDataBase) GetMenuItemDescription(id int) (string, error) {
+	return restaurantDataBase.Database.GetColumnValue(restaurantDataBase.MenuItems, "menu_item_description", id)
 }
 
-func (RestaurantDataBase RestaurantDataBase) GetMenuItemIDs() ([]string, error) {
-	return RestaurantDataBase.Database.GetColumnValues(RestaurantDataBase.MenuItems, "menu_item_id")
+func (restaurantDataBase RestaurantDataBase) GetMenuItemIDs() ([]string, error) {
+	return restaurantDataBase.Database.GetColumnValues(restaurantDataBase.MenuItems, "menu_item_id")
 }
 
-func (RestaurantDataBase RestaurantDataBase) AddMenuItem(newItemName string, newItemDescription string) error {
-	err := RestaurantDataBase.Database.AddRowToTable(RestaurantDataBase.MenuItems,
+func (restaurantDataBase RestaurantDataBase) AddMenuItem(newItemName string, newItemDescription string) error {
+	err := restaurantDataBase.Database.AddRowToTable(restaurantDataBase.MenuItems,
 		map[string]string{"menu_item_name": newItemName, "menu_item_description": newItemDescription})
 	return err
 }
 
-func (RestaurantDataBase RestaurantDataBase) DeleteMenuItem(id int) error {
-	return RestaurantDataBase.Database.DeleteItem(RestaurantDataBase.MenuItems, id)
+func (restaurantDataBase RestaurantDataBase) DeleteMenuItem(id int) error {
+	return restaurantDataBase.Database.DeleteItem(restaurantDataBase.MenuItems, id)
 }
 
-func (RestaurantDataBase RestaurantDataBase) ChangeMenuItemDescription(id int, newValue string) error {
-	return RestaurantDataBase.Database.ChangeRowValue(RestaurantDataBase.MenuItems,
+func (restaurantDataBase RestaurantDataBase) ChangeMenuItemDescription(id int, newValue string) error {
+	return restaurantDataBase.Database.ChangeRowValue(restaurantDataBase.MenuItems,
 		"menu_item_description", id, newValue)
 }
+
+//Menu item ingredient methods
+
+func (restaurantDataBase RestaurantDataBase) AddIngredientToMenuItem(menuItemID int, ingredientID int) error {
+	return restaurantDataBase.Database.AddRowToTable(restaurantDataBase.MenuItemIngredients,
+		map[string]string{"menu_item_id": strconv.Itoa(menuItemID), "ingredient_id": strconv.Itoa(ingredientID)})
+}
+
+func (restaurantDataBase RestaurantDataBase) GetIngredientsOfMenuItem(menuItemID int) ([]string, error) {
+	query := fmt.Sprintf("SELECT ingredient_name "+
+		"FROM menu_item_ingredients "+
+		"INNER JOIN ingredients "+
+		"ON menu_item_ingredients.ingredient_id = ingredients.ingredient_id "+
+		"WHERE menu_item_id = %v", menuItemID)
+	return restaurantDataBase.Database.getQueryResults(query)
+}
+
+//func (RestaurantDataBase RestaurantDataBase) DeleteIngredientFromMenuItem(IngredientMenuItemID int) error {
+//
+//}

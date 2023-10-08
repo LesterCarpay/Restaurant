@@ -139,6 +139,23 @@ func (db *Database) GetColumnValues(table Table, column string) ([]string, error
 	return items, nil
 }
 
+func (db *Database) GetColumnValue(table Table, column string, id int) (string, error) {
+	var item string
+
+	rows, err := db.sqlDB.Query(fmt.Sprintf("SELECT %v FROM %v WHERE %v = %v",
+		column, table.Name, table.IDColumnName, id))
+	if err != nil {
+		return "", err
+	}
+	for rows.Next() {
+		err := rows.Scan(&item)
+		if err != nil {
+			return "", err
+		}
+	}
+	return item, nil
+}
+
 func (db *Database) GetTableIndices(table Table) ([]string, error) {
 	return db.GetColumnValues(table, table.IDColumnName)
 }
@@ -150,4 +167,22 @@ func (db *Database) ChangeRowValue(table Table, col string, id int, newValue str
 		return err
 	}
 	return nil
+}
+
+func (db *Database) getQueryResults(query string) ([]string, error) {
+	var item string
+	var items []string
+
+	rows, err := db.sqlDB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		err := rows.Scan(&item)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, nil
 }

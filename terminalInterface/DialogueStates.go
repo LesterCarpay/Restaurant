@@ -2,6 +2,7 @@ package terminalInterface
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 )
 
@@ -110,15 +111,15 @@ func (dialogueManager *dialogueManager) showManageMenuItems() {
 		}
 	}
 	fmt.Println("What would you like to do?")
-	chosenOption := showChoiceMenu([]string{"Add menu items",
-		"Delete menu items", "Change menu item description", "Return home"})
+	chosenOption := showChoiceMenu([]string{"Add menu item",
+		"Delete menu item", "Change menu item", "Return home"})
 	switch chosenOption {
 	case 1:
 		dialogueManager.CurrentState = addMenuItem
 	case 2:
 		dialogueManager.CurrentState = deleteMenuItem
 	case 3:
-		dialogueManager.CurrentState = changeMenuItemDescription
+		dialogueManager.CurrentState = changeMenuItem
 	default:
 		dialogueManager.CurrentState = home
 	}
@@ -168,37 +169,75 @@ func (dialogueManager *dialogueManager) showMenuItemDelete() {
 	}
 }
 
-func (dialogueManager *dialogueManager) showMenuItemChangeDescription() {
+func (dialogueManager *dialogueManager) showChangeMenuItem() {
 	items, err := dialogueManager.RestaurantDataBase.GetMenuItems()
 	handleError(err)
 	if len(items) < 1 {
-		fmt.Println("No menu item descriptions to change. Returning home.")
+		fmt.Println("No menu items to change. Returning home.")
 		dialogueManager.CurrentState = home
 		return
 	}
 	ids, err := dialogueManager.RestaurantDataBase.GetMenuItemIDs()
-	handleError(err)
-	descriptions, err := dialogueManager.RestaurantDataBase.GetMenuItemDescriptions()
-	handleError(err)
-	fmt.Println("Which menu item description you like to change?")
-	var namesWithDescriptions []string
 
-	for i := 0; i < len(items); i++ {
-		namesWithDescriptions = append(namesWithDescriptions, items[i]+": "+descriptions[i])
+	handleError(err)
+	fmt.Println("Which menu item would you like to change?")
+	chosenOption := showChoiceMenu(items) - 1
+	menuItemID, err := strconv.Atoi(ids[chosenOption])
+	handleError(err)
+
+	fmt.Println("Menu item:", items[chosenOption])
+	description, err := dialogueManager.RestaurantDataBase.GetMenuItemDescription(menuItemID)
+	handleError(err)
+	fmt.Println("Description:", description)
+	ingredients, err := dialogueManager.RestaurantDataBase.GetIngredientsOfMenuItem(menuItemID)
+	handleError(err)
+	fmt.Printf("Ingredients: %v\n", ingredients)
+	fmt.Println("What would you like to change?")
+	chosenOption = showChoiceMenu([]string{"Modify description", "Add ingredient"})
+	if chosenOption == 1 {
+		dialogueManager.showChangeMenuItemDescription(menuItemID)
+	} else {
+		dialogueManager.showAddIngredientToMenuItem(menuItemID)
 	}
-
-	chosenOption := showChoiceMenu(namesWithDescriptions) - 1
-	id, err := strconv.Atoi(ids[chosenOption])
-	handleError(err)
-
-	fmt.Println("New menu item description:")
-	newIngredientDescription := getUserInput()
-	err = dialogueManager.RestaurantDataBase.ChangeMenuItemDescription(id, newIngredientDescription)
-	handleError(err)
-	fmt.Println("Successfully changed menu item description.")
-	fmt.Println("Would you change another menu item description?")
-	chosenOption = showChoiceMenu([]string{"Yes", "No"})
-	if chosenOption != 1 {
+	fmt.Println("Would you like to make another change?")
+	chosenOption = showChoiceMenu([]string{"Yes", "No, return home"})
+	if chosenOption == 1 {
+		dialogueManager.CurrentState = changeMenuItem
+	} else {
 		dialogueManager.CurrentState = home
 	}
+}
+
+func (dialogueManager *dialogueManager) showChangeMenuItemDescription(menuItemID int) {
+	fmt.Println("New menu item description:")
+	newIngredientDescription := getUserInput()
+	err := dialogueManager.RestaurantDataBase.ChangeMenuItemDescription(menuItemID, newIngredientDescription)
+	handleError(err)
+	fmt.Println("Successfully changed menu item description.")
+}
+
+func (dialogueManager *dialogueManager) showAddIngredientToMenuItem(menuItemID int) {
+	ingredients, err := dialogueManager.RestaurantDataBase.GetIngredients()
+	handleError(err)
+	ingredientIDs, err := dialogueManager.RestaurantDataBase.GetIngredientIDs()
+	handleError(err)
+	currentIngredients, err := dialogueManager.RestaurantDataBase.GetIngredientsOfMenuItem(menuItemID)
+	handleError(err)
+	var ingredientOptions []string
+	var ingredientOptionIDs []string
+	for i, ingredient := range ingredients {
+		if !slices.Contains(currentIngredients, ingredient) {
+			ingredientOptions = append(ingredientOptions, ingredient)
+			ingredientOptionIDs = append(ingredientOptionIDs, ingredientIDs[i])
+		}
+	}
+	if len(ingredientOptions) < 1 {
+		fmt.Println("There are no available ingredients to add.")
+		return
+	}
+	fmt.Println("Which ingredient would you like to add?")
+	ingredientID, err := strconv.Atoi(ingredientOptionIDs[showChoiceMenu(ingredientOptions)-1])
+	handleError(err)
+	err = dialogueManager.RestaurantDataBase.AddIngredientToMenuItem(menuItemID, ingredientID)
+	handleError(err)
 }
