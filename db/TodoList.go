@@ -1,21 +1,20 @@
-package main
+package db
 
 import (
-	"Restaurant/db"
 	_ "github.com/lib/pq"
 	"log"
 )
 
 type ToDoListDB struct {
-	db db.Database
+	db Database
 }
 
-var toDosTable = db.Table{Name: "todos",
+var toDosTable = Table{Name: "todos",
 	IDColumnName: "item_id",
 	OtherColumns: map[string]string{"item": "text"}}
 
-func (tdl *ToDoListDB) ConnectToDatabase() {
-	err := tdl.db.ConnectToDatabase()
+func (tdl *ToDoListDB) ConnectToDatabase(connectionString string) {
+	err := tdl.db.ConnectToDatabase(connectionString)
 	if err != nil {
 		log.Fatalln(err)
 	}

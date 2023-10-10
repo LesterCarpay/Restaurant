@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"slices"
 )
 
@@ -14,43 +13,12 @@ type Table struct {
 }
 
 type Database struct {
-	tables []Table
-	sqlDB  *sql.DB
+	sqlDB *sql.DB
 }
 
-func scanWithDefault(name string, defaultValue string) string {
-	fmt.Print(name + " [" + defaultValue + "]:")
-	var result string
-	_, err := fmt.Scanln(&result)
-	if err != nil || result == "" {
-		return defaultValue
-	}
-	return result
-}
-
-func getConnectionString() string {
-	var password string
-
-	host := scanWithDefault("Host", "localhost")
-	dbName := scanWithDefault("Database", "todos")
-	username := scanWithDefault("Username", "postgres")
-	fmt.Print("Password:")
-	_, err := fmt.Scanln(&password)
-	if err != nil {
-		fmt.Println("Incorrect password.")
-		log.Fatalln(err)
-	}
-	return "postgresql://" +
-		username + ":" +
-		password + "@" +
-		host + "/" +
-		dbName + "?sslmode=disable"
-}
-
-func (db *Database) ConnectToDatabase() error {
+func (db *Database) ConnectToDatabase(connectionString string) error {
 	fmt.Println("Loading Database...")
 
-	connectionString := getConnectionString()
 	sqlDB, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		return err
@@ -107,9 +75,9 @@ func (db *Database) TableExists(table Table) (bool, error) {
 }
 
 func (db *Database) ColumnsExist(table Table) (bool, error) {
-	result, err := db.sqlDB.Query("SELECT column_name " +
-		"FROM information_schema.columns " +
-		"WHERE TABLE_NAME = 'todos'")
+	result, err := db.sqlDB.Query(fmt.Sprintf("SELECT column_name "+
+		"FROM information_schema.columns "+
+		"WHERE TABLE_NAME = '%v'", table.Name))
 	if err != nil {
 		return false, err
 	}
@@ -158,6 +126,54 @@ func (db *Database) GetColumnValues(table Table, column string) ([]string, error
 	var items []string
 
 	rows, err := db.sqlDB.Query(fmt.Sprintf("SELECT %v FROM %v", column, table.Name))
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		err := rows.Scan(&item)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, nil
+}
+
+func (db *Database) GetColumnValue(table Table, column string, id int) (string, error) {
+	var item string
+
+	rows, err := db.sqlDB.Query(fmt.Sprintf("SELECT %v FROM %v WHERE %v = %v",
+		column, table.Name, table.IDColumnName, id))
+	if err != nil {
+		return "", err
+	}
+	for rows.Next() {
+		err := rows.Scan(&item)
+		if err != nil {
+			return "", err
+		}
+	}
+	return item, nil
+}
+
+func (db *Database) GetTableIndices(table Table) ([]string, error) {
+	return db.GetColumnValues(table, table.IDColumnName)
+}
+
+func (db *Database) ChangeRowValue(table Table, col string, id int, newValue string) error {
+	_, err := db.sqlDB.Exec(fmt.Sprintf("UPDATE %v SET %v = '%v' WHERE %v = %v",
+		table.Name, col, newValue, table.IDColumnName, id))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *Database) getQueryResults(query string) ([]string, error) {
+	var item string
+	var items []string
+
+	rows, err := db.sqlDB.Query(query)
 	if err != nil {
 		return nil, err
 	}
