@@ -6,6 +6,7 @@ import (
 	"strconv"
 )
 
+// showHome starts the dialogue for the home state.
 func (dialogueManager *dialogueManager) showHome() {
 	fmt.Println("Welcome to your restaurant management environment.")
 	fmt.Println("What would you like to do?")
@@ -21,6 +22,7 @@ func (dialogueManager *dialogueManager) showHome() {
 	}
 }
 
+// showManageIngredients starts the dialogue for the manageIngredients state.
 func (dialogueManager *dialogueManager) showManageIngredients() {
 	ingredients, err := dialogueManager.RestaurantDataBase.GetIngredients()
 	if err != nil {
@@ -51,6 +53,7 @@ func (dialogueManager *dialogueManager) showManageIngredients() {
 	}
 }
 
+// showIngredientAdd starts the dialogue for the addIngredient state.
 func (dialogueManager *dialogueManager) showIngredientAdd() {
 	fmt.Println("Adding new ingredient.")
 	fmt.Print("Name: ")
@@ -70,6 +73,7 @@ func (dialogueManager *dialogueManager) showIngredientAdd() {
 	}
 }
 
+// showIngredientDelete starts the dialogue for the deleteIngredient state.
 func (dialogueManager *dialogueManager) showIngredientDelete() {
 	items, err := dialogueManager.RestaurantDataBase.GetIngredients()
 	handleError(err)
@@ -93,6 +97,7 @@ func (dialogueManager *dialogueManager) showIngredientDelete() {
 	}
 }
 
+// showManageMenuItems starts the dialogue for the manageMenuItems state.
 func (dialogueManager *dialogueManager) showManageMenuItems() {
 	menuItems, err := dialogueManager.RestaurantDataBase.GetMenuItems()
 	if err != nil {
@@ -125,6 +130,7 @@ func (dialogueManager *dialogueManager) showManageMenuItems() {
 	}
 }
 
+// showMenuItemAdd starts the dialogue for the 	manageMenuItems state.
 func (dialogueManager *dialogueManager) showMenuItemAdd() {
 	fmt.Println("Adding new menu item.")
 	fmt.Print("Name: ")
@@ -146,6 +152,7 @@ func (dialogueManager *dialogueManager) showMenuItemAdd() {
 	}
 }
 
+// showMenuItemDelete starts the dialogue for the deleteMenuItems state.
 func (dialogueManager *dialogueManager) showMenuItemDelete() {
 	items, err := dialogueManager.RestaurantDataBase.GetMenuItems()
 	handleError(err)
@@ -169,6 +176,7 @@ func (dialogueManager *dialogueManager) showMenuItemDelete() {
 	}
 }
 
+// showChangeMenuItem starts the dialogue for the changeMenuItem state.
 func (dialogueManager *dialogueManager) showChangeMenuItem() {
 	items, err := dialogueManager.RestaurantDataBase.GetMenuItems()
 	handleError(err)
@@ -208,6 +216,7 @@ func (dialogueManager *dialogueManager) showChangeMenuItem() {
 	}
 }
 
+// showChangeMenuItemDescription starts the dialogue for the changeMenuItemDescription state.
 func (dialogueManager *dialogueManager) showChangeMenuItemDescription(menuItemID int) {
 	fmt.Println("New menu item description:")
 	newIngredientDescription := getUserInput()
@@ -216,6 +225,7 @@ func (dialogueManager *dialogueManager) showChangeMenuItemDescription(menuItemID
 	fmt.Println("Successfully changed menu item description.")
 }
 
+// showAddIngredientToMenuItem starts the dialogue for the addIngredientToMenuItem state.
 func (dialogueManager *dialogueManager) showAddIngredientToMenuItem(menuItemID int) {
 	ingredients, err := dialogueManager.RestaurantDataBase.GetIngredients()
 	handleError(err)
