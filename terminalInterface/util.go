@@ -8,6 +8,7 @@ import (
 	"strconv"
 )
 
+// getUserInput reads the standard input until a newline is found and returns it without the newline.
 func getUserInput() string {
 	var inputReader = bufio.NewReader(os.Stdin)
 	input, err := inputReader.ReadString('\n')
@@ -18,6 +19,8 @@ func getUserInput() string {
 	return input[:len(input)-1]
 }
 
+// getDialogueOption accepts an int nOptions, reads the standard input and, if it read a number between 
+// 1 and nOptions, returns it, and if not, rereads the standard input until a valid number has been read.
 func getDialogueOption(nOptions int) int {
 	var option int
 	input := getUserInput()
@@ -30,6 +33,8 @@ func getDialogueOption(nOptions int) int {
 	}
 }
 
+// showChoiceMenu accepts a slice of strings, displays them as a list of options, reads the user input and
+// returns the chosen option.
 func showChoiceMenu(options []string) int {
 	for i, option := range options {
 		fmt.Println(strconv.Itoa(i+1)+".", option+".")
@@ -37,8 +42,10 @@ func showChoiceMenu(options []string) int {
 	return getDialogueOption(len(options))
 }
 
-func scanWithDefault(name string, defaultValue string) string {
-	fmt.Print(name + " [" + defaultValue + "]:")
+// scanWithDefault accepts name of the variable the user needs to input and a default value, reads the
+// standard input and returns the user input or the default value if only a newline has been entered.
+func scanWithDefault(varName string, defaultValue string) string {
+	fmt.Print(varName + " [" + defaultValue + "]:")
 	var result string
 	_, err := fmt.Scanln(&result)
 	if err != nil || result == "" {
@@ -47,6 +54,8 @@ func scanWithDefault(name string, defaultValue string) string {
 	return result
 }
 
+// GetConnectionString asks the user for the necessary input values in the terminal, chains the inputs together
+// into a connection string and returns it.
 func GetConnectionString() string {
 	var password string
 
