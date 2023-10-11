@@ -15,15 +15,15 @@ import (
 type dialogueState int
 
 const (
-	quit              dialogueState = 0
-	home              dialogueState = 1
-	manageIngredients dialogueState = 2
-	addIngredient     dialogueState = 3
-	deleteIngredient  dialogueState = 4
-	manageMenuItems   dialogueState = 5
-	addMenuItem       dialogueState = 6
-	deleteMenuItem    dialogueState = 7
-	changeMenuItem    dialogueState = 8
+	quit              dialogueState = iota
+	home
+	manageIngredients
+	addIngredient
+	deleteIngredient
+	manageMenuItems
+	addMenuItem
+	deleteMenuItem
+	changeMenuItem
 )
 
 // dialogueManager features fields and encodes behavior for managing the dialogue loop.
