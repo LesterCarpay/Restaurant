@@ -15,7 +15,7 @@ import (
 type dialogueState int
 
 const (
-	quit              dialogueState = iota
+	quit dialogueState = iota
 	home
 	manageIngredients
 	addIngredient
@@ -88,7 +88,7 @@ func (dialogueManager *dialogueManager) loopDialogue() {
 	}
 }
 
-// showNextWindow calls for the next window of the appropriate state to be showns.
+// showNextWindow calls for the next window of the appropriate state to be shown.
 func (dialogueManager *dialogueManager) showNextWindow() {
 	switch dialogueManager.CurrentState {
 	case home:

@@ -1,5 +1,5 @@
 /*
-Package db implements simple, common operations with a PostgreSQL database. 
+Package db implements simple, common operations with a PostgreSQL database.
 It implements methods for the specific use case of a restaurant database.
 */
 package db
@@ -22,7 +22,7 @@ type Database struct {
 	sqlDB *sql.DB
 }
 
-// ConnectToDatabase accepts a connection string and establishes an active connection 
+// ConnectToDatabase accepts a connection string and establishes an active connection
 // between a database struct and the SQL database.
 func (db *Database) ConnectToDatabase(connectionString string) error {
 	fmt.Println("Loading Database...")
@@ -86,7 +86,7 @@ func (db *Database) TableExists(table Table) (bool, error) {
 	return true, nil
 }
 
-// TableExists accepts a table struct and returns true if the table of the same name
+// ColumnsExist accepts a table struct and returns true if the table of the same name
 // in the SQL database has the columns that the table struct has, false if not.
 func (db *Database) ColumnsExist(table Table) (bool, error) {
 	result, err := db.sqlDB.Query(fmt.Sprintf("SELECT column_name "+
@@ -158,7 +158,7 @@ func (db *Database) GetColumnValues(table Table, column string) ([]string, error
 	return items, nil
 }
 
-// GetColumnValues accepts a table, column name and id and returns the row value corresponding to
+// GetColumnValue accepts a table, column name and id and returns the row value corresponding to
 // that column and id from the database as a string.
 func (db *Database) GetColumnValue(table Table, column string, id int) (string, error) {
 	var item string
@@ -177,12 +177,12 @@ func (db *Database) GetColumnValue(table Table, column string, id int) (string, 
 	return item, nil
 }
 
-// GetColumnValues accepts a table and returns the ids from the database as a string.
+// GetTableIndices accepts a table and returns the ids from the database as a string.
 func (db *Database) GetTableIndices(table Table) ([]string, error) {
 	return db.GetColumnValues(table, table.IDColumnName)
 }
 
-// ChangeRowValue accepts a table, column name, id and new value, and changes the 
+// ChangeRowValue accepts a table, column name, id and new value, and changes the
 // corresponding value in the database to the new value.
 func (db *Database) ChangeRowValue(table Table, col string, id int, newValue string) error {
 	_, err := db.sqlDB.Exec(fmt.Sprintf("UPDATE %v SET %v = '%v' WHERE %v = %v",

@@ -6,7 +6,7 @@ import (
 )
 
 // RestaurantDataBase represents a postgreSQL database for a restaurant with relations for
-// ingredients, menu items, and menu item ingredients, which encodes which menu items contain 
+// ingredients, menu items, and menu item ingredients, which encodes which menu items contain
 // which ingredients.
 type RestaurantDataBase struct {
 	Database            Database
@@ -51,7 +51,7 @@ func (restaurantDataBase RestaurantDataBase) GetIngredients() ([]string, error) 
 	return restaurantDataBase.Database.GetColumnValues(restaurantDataBase.Ingredients, "ingredient_name")
 }
 
-// GetInGetIngredientIDs returns the ids of the ingredients in the database.
+// GetIngredientIDs returns the ids of the ingredients in the database.
 func (restaurantDataBase RestaurantDataBase) GetIngredientIDs() ([]string, error) {
 	return restaurantDataBase.Database.GetTableIndices(restaurantDataBase.Ingredients)
 }
