@@ -19,7 +19,7 @@ func getUserInput() string {
 	return input[:len(input)-1]
 }
 
-// getDialogueOption accepts an int nOptions, reads the standard input and, if it read a number between 
+// getDialogueOption accepts an int nOptions, reads the standard input and, if it read a number between
 // 1 and nOptions, returns it, and if not, rereads the standard input until a valid number has been read.
 func getDialogueOption(nOptions int) int {
 	var option int
@@ -40,6 +40,25 @@ func showChoiceMenu(options []string) int {
 		fmt.Println(strconv.Itoa(i+1)+".", option+".")
 	}
 	return getDialogueOption(len(options))
+}
+
+// showChoiceMenuMap accepts a map with ids as its key and strings as its values, displays the strings as a list of
+// options, reads the user input and returns the id of the chosen option.
+func showChoiceMenuMap(options map[int]string) int {
+	idMap := make(map[int]int)
+	i := 1
+	for id := range options {
+		idMap[i] = id
+		i++
+	}
+	for i := 1; i <= len(idMap); i++ {
+		id := idMap[i]
+		option := options[id]
+		fmt.Println(strconv.Itoa(i)+".", option+".")
+	}
+	i = getDialogueOption(len(options))
+	id := idMap[i]
+	return id
 }
 
 // scanWithDefault accepts name of the variable the user needs to input and a default value, reads the

@@ -1,7 +1,6 @@
 package db
 
 import (
-	"fmt"
 	"strconv"
 )
 
@@ -47,13 +46,8 @@ func (restaurantDataBase RestaurantDataBase) GetTables() []Table {
 // Ingredient methods
 
 // GetIngredients returns all ingredients in the database.
-func (restaurantDataBase RestaurantDataBase) GetIngredients() ([]string, error) {
+func (restaurantDataBase RestaurantDataBase) GetIngredients() (map[int]string, error) {
 	return restaurantDataBase.Database.GetColumnValues(restaurantDataBase.Ingredients, "ingredient_name")
-}
-
-// GetIngredientIDs returns the ids of the ingredients in the database.
-func (restaurantDataBase RestaurantDataBase) GetIngredientIDs() ([]string, error) {
-	return restaurantDataBase.Database.GetTableIndices(restaurantDataBase.Ingredients)
 }
 
 // AddIngredient accepts an ingredient name and adds it to the database.
@@ -71,18 +65,17 @@ func (restaurantDataBase RestaurantDataBase) DeleteIngredient(id int) error {
 // Menu item methods
 
 // GetMenuItems returns all menu items in the database.
-func (restaurantDataBase RestaurantDataBase) GetMenuItems() ([]string, error) {
+func (restaurantDataBase RestaurantDataBase) GetMenuItems() (map[int]string, error) {
 	return restaurantDataBase.Database.GetColumnValues(restaurantDataBase.MenuItems, "menu_item_name")
 }
 
 // GetMenuItemDescription accepts an id and returns the description of the menu item with that id.
 func (restaurantDataBase RestaurantDataBase) GetMenuItemDescription(id int) (string, error) {
-	return restaurantDataBase.Database.GetColumnValue(restaurantDataBase.MenuItems, "menu_item_description", id)
-}
-
-// GetMenuItemIDs returns the ids of all menu item in the database.
-func (restaurantDataBase RestaurantDataBase) GetMenuItemIDs() ([]string, error) {
-	return restaurantDataBase.Database.GetColumnValues(restaurantDataBase.MenuItems, "menu_item_id")
+	descriptions, err := restaurantDataBase.Database.GetColumnValues(restaurantDataBase.MenuItems, "menu_item_description")
+	if err != nil {
+		return "", err
+	}
+	return descriptions[id], nil
 }
 
 // AddMenuItem accepts an item name and description and creates a corresponding menu item entry in the database.
@@ -114,13 +107,9 @@ func (restaurantDataBase RestaurantDataBase) AddIngredientToMenuItem(menuItemID 
 }
 
 // GetIngredientsOfMenuItem accepts the id of a menu item and returns the names of the ingredients it contains.
-func (restaurantDataBase RestaurantDataBase) GetIngredientsOfMenuItem(menuItemID int) ([]string, error) {
-	query := fmt.Sprintf("SELECT ingredient_name "+
-		"FROM menu_item_ingredients "+
-		"INNER JOIN ingredients "+
-		"ON menu_item_ingredients.ingredient_id = ingredients.ingredient_id "+
-		"WHERE menu_item_id = %v", menuItemID)
-	return restaurantDataBase.Database.getQueryResults(query)
+func (restaurantDataBase RestaurantDataBase) GetIngredientsOfMenuItem(menuItemID int) (map[int]string, error) {
+	return restaurantDataBase.Database.getCompositionElements("ingredient_name", restaurantDataBase.MenuItems, restaurantDataBase.Ingredients,
+		restaurantDataBase.MenuItemIngredients, menuItemID)
 }
 
 //func (RestaurantDataBase RestaurantDataBase) DeleteIngredientFromMenuItem(IngredientMenuItemID int) error {

@@ -140,46 +140,26 @@ func (db *Database) DeleteItem(table Table, id int) error {
 
 // GetColumnValues accepts a table and column name and returns the row values corresponding to
 // that column from the database as a slice of strings.
-func (db *Database) GetColumnValues(table Table, column string) ([]string, error) {
-	var item string
-	var items []string
+func (db *Database) GetColumnValues(table Table, columnName string) (map[int]string, error) {
+	var (
+		item   string
+		itemID int
+	)
+	items := make(map[int]string)
 
-	rows, err := db.sqlDB.Query(fmt.Sprintf("SELECT %v FROM %v", column, table.Name))
+	rows, err := db.sqlDB.Query(fmt.Sprintf("SELECT %v, %v FROM %v",
+		table.IDColumnName, columnName, table.Name))
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
-		err := rows.Scan(&item)
+		err := rows.Scan(&itemID, &item)
 		if err != nil {
 			return nil, err
 		}
-		items = append(items, item)
+		items[itemID] = item
 	}
 	return items, nil
-}
-
-// GetColumnValue accepts a table, column name and id and returns the row value corresponding to
-// that column and id from the database as a string.
-func (db *Database) GetColumnValue(table Table, column string, id int) (string, error) {
-	var item string
-
-	rows, err := db.sqlDB.Query(fmt.Sprintf("SELECT %v FROM %v WHERE %v = %v",
-		column, table.Name, table.IDColumnName, id))
-	if err != nil {
-		return "", err
-	}
-	for rows.Next() {
-		err := rows.Scan(&item)
-		if err != nil {
-			return "", err
-		}
-	}
-	return item, nil
-}
-
-// GetTableIndices accepts a table and returns the ids from the database as a string.
-func (db *Database) GetTableIndices(table Table) ([]string, error) {
-	return db.GetColumnValues(table, table.IDColumnName)
 }
 
 // ChangeRowValue accepts a table, column name, id and new value, and changes the
@@ -193,21 +173,41 @@ func (db *Database) ChangeRowValue(table Table, col string, id int, newValue str
 	return nil
 }
 
-// getQueryResults accepts a query, passes it to the database and returns the results.
-func (db *Database) getQueryResults(query string) ([]string, error) {
-	var item string
-	var items []string
+// getCompositionElements accepts the name of a column, the composing table in a composition relationship, the name of
+// the element table in this relationship and the table that encodes the composition relation, as well as the id of the
+// row of the composer table for which elements should be returned. The function returns the elements that the row of
+// the composer table contains as a dictionary of its id and the values of the specified column.
+func (db *Database) getCompositionElements(columnName string, composerTable Table, elementTable Table,
+	compositionTable Table, rowID int) (map[int]string, error) {
+	query := fmt.Sprintf("SELECT %v, %v "+
+		"FROM %v "+
+		"INNER JOIN %v "+
+		"ON %v = %v "+
+		"WHERE %v = %v", elementTable.Name+"."+elementTable.IDColumnName,
+		columnName,
+		compositionTable.Name,
+		elementTable.Name,
+		compositionTable.Name+"."+elementTable.IDColumnName,
+		elementTable.Name+"."+elementTable.IDColumnName,
+		composerTable.IDColumnName,
+		rowID)
+
+	var (
+		item   string
+		itemID int
+	)
+	items := make(map[int]string)
 
 	rows, err := db.sqlDB.Query(query)
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
-		err := rows.Scan(&item)
+		err := rows.Scan(&itemID, &item)
 		if err != nil {
 			return nil, err
 		}
-		items = append(items, item)
+		items[itemID] = item
 	}
 	return items, nil
 }
