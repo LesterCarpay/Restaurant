@@ -189,7 +189,10 @@ func (dialogueManager *dialogueManager) showChangeMenuItem() {
 	fmt.Println("Description:", description)
 	ingredients, err := dialogueManager.RestaurantDataBase.GetIngredientsOfMenuItem(menuItemID)
 	handleError(err)
-	fmt.Printf("Ingredients: %v\n", ingredients)
+	fmt.Printf("Ingredients:\n")
+	for _, ingredient := range ingredients {
+		fmt.Println(ingredient)
+	}
 	fmt.Println("What would you like to change?")
 	chosenOption := showChoiceMenu([]string{"Modify description", "Add ingredient"})
 	if chosenOption == 1 {
