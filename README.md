@@ -15,4 +15,3 @@ To do:
 - removing menu items should also remove all their ingredient relations from the table
 - password should be hidden
 - each menu should have the ability to cancel the operation
-- print the ingredient list in a readable format
