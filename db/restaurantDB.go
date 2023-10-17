@@ -112,6 +112,7 @@ func (restaurantDataBase RestaurantDataBase) GetIngredientsOfMenuItem(menuItemID
 		restaurantDataBase.MenuItemIngredients, menuItemID)
 }
 
-//func (RestaurantDataBase RestaurantDataBase) DeleteIngredientFromMenuItem(IngredientMenuItemID int) error {
-//
-//}
+// DeleteIngredientFromMenuItem accepts the id of a menu item ingredient row and deletes it from the table.
+func (restaurantDataBase RestaurantDataBase) DeleteIngredientFromMenuItem(ingredientMenuItemID int) error {
+	return restaurantDataBase.Database.DeleteItem(restaurantDataBase.MenuItemIngredients, ingredientMenuItemID)
+}
