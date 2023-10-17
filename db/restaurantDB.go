@@ -86,8 +86,18 @@ func (restaurantDataBase RestaurantDataBase) AddMenuItem(newItemName string, new
 }
 
 // DeleteMenuItem accepts an id and deletes the menu item with that id from the database.
-func (restaurantDataBase RestaurantDataBase) DeleteMenuItem(id int) error {
-	return restaurantDataBase.Database.DeleteItem(restaurantDataBase.MenuItems, id)
+func (restaurantDataBase RestaurantDataBase) DeleteMenuItem(menuItemID int) error {
+	menuItemIngredientIDs, err := restaurantDataBase.getIngredientIDsOfMenuItem(menuItemID)
+	if err != nil {
+		return err
+	}
+	for menuItemIngredientID := range menuItemIngredientIDs {
+		err = restaurantDataBase.DeleteIngredientFromMenuItem(menuItemIngredientID)
+		if err != nil {
+			return err
+		}
+	}
+	return restaurantDataBase.Database.DeleteItem(restaurantDataBase.MenuItems, menuItemID)
 }
 
 // ChangeMenuItemDescription accepts an id and a new description and changes the description of the corresponding
@@ -106,9 +116,28 @@ func (restaurantDataBase RestaurantDataBase) AddIngredientToMenuItem(menuItemID 
 		map[string]string{"menu_item_id": strconv.Itoa(menuItemID), "ingredient_id": strconv.Itoa(ingredientID)})
 }
 
-// GetIngredientsOfMenuItem accepts the id of a menu item and returns the names of the ingredients it contains.
+// GetIngredientsOfMenuItem accepts the id of a menu item and returns a map of the ids and names of the ingredients it
+// contains.
 func (restaurantDataBase RestaurantDataBase) GetIngredientsOfMenuItem(menuItemID int) (map[int]string, error) {
-	return restaurantDataBase.Database.getCompositionElements("ingredient_name", restaurantDataBase.MenuItems, restaurantDataBase.Ingredients,
+	menuItemIngredientIDs, err := restaurantDataBase.getIngredientIDsOfMenuItem(menuItemID)
+	if err != nil {
+		return nil, err
+	}
+	ingredients, err := restaurantDataBase.GetIngredients()
+	if err != nil {
+		return nil, err
+	}
+	menuItemIngredients := make(map[int]string)
+	for _, ingredientKey := range menuItemIngredientIDs {
+		menuItemIngredients[ingredientKey] = ingredients[ingredientKey]
+	}
+	return menuItemIngredients, nil
+}
+
+// getIngredientIDsOfMenuItem accepts the id of a menu item and returns a map of the menu item ingredient relation ids and
+// the ids of the ingredients the menu item contains.
+func (restaurantDataBase RestaurantDataBase) getIngredientIDsOfMenuItem(menuItemID int) (map[int]int, error) {
+	return restaurantDataBase.Database.getCompositionElements(restaurantDataBase.MenuItems, restaurantDataBase.Ingredients,
 		restaurantDataBase.MenuItemIngredients, menuItemID)
 }
 

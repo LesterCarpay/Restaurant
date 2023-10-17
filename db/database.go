@@ -173,18 +173,19 @@ func (db *Database) ChangeRowValue(table Table, col string, id int, newValue str
 	return nil
 }
 
-// getCompositionElements accepts the name of a column, the composing table in a composition relationship, the name of
-// the element table in this relationship and the table that encodes the composition relation, as well as the id of the
-// row of the composer table for which elements should be returned. The function returns the elements that the row of
-// the composer table contains as a dictionary of its id and the values of the specified column.
-func (db *Database) getCompositionElements(columnName string, composerTable Table, elementTable Table,
-	compositionTable Table, rowID int) (map[int]string, error) {
+// getCompositionElements accepts the composing table in a composition relationship, the element table in this
+// relationship and the table that encodes the composition relation, as well as the id of the
+// row of the composer table for which elements should be returned. The function returns the ids of the elements that
+// the row of the composer table contains as a dictionary of the relationship id and the element ids.
+func (db *Database) getCompositionElements(composerTable Table, elementTable Table,
+	compositionTable Table, rowID int) (map[int]int, error) {
 	query := fmt.Sprintf("SELECT %v, %v "+
 		"FROM %v "+
 		"INNER JOIN %v "+
 		"ON %v = %v "+
-		"WHERE %v = %v", elementTable.Name+"."+elementTable.IDColumnName,
-		columnName,
+		"WHERE %v = %v",
+		compositionTable.Name+"."+compositionTable.IDColumnName,
+		elementTable.Name+"."+elementTable.IDColumnName,
 		compositionTable.Name,
 		elementTable.Name,
 		compositionTable.Name+"."+elementTable.IDColumnName,
@@ -193,21 +194,21 @@ func (db *Database) getCompositionElements(columnName string, composerTable Tabl
 		rowID)
 
 	var (
-		item   string
-		itemID int
+		compositionRelationshipID int
+		itemID                    int
 	)
-	items := make(map[int]string)
+	items := make(map[int]int)
 
 	rows, err := db.sqlDB.Query(query)
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
-		err := rows.Scan(&itemID, &item)
+		err := rows.Scan(&compositionRelationshipID, &itemID)
 		if err != nil {
 			return nil, err
 		}
-		items[itemID] = item
+		items[compositionRelationshipID] = itemID
 	}
 	return items, nil
 }
