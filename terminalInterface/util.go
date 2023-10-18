@@ -3,6 +3,7 @@ package terminalInterface
 import (
 	"bufio"
 	"fmt"
+	"golang.org/x/crypto/ssh/terminal"
 	"log"
 	"os"
 	"strconv"
@@ -76,13 +77,12 @@ func scanWithDefault(varName string, defaultValue string) string {
 // GetConnectionString asks the user for the necessary input values in the terminal, chains the inputs together
 // into a connection string and returns it.
 func GetConnectionString() string {
-	var password string
-
 	host := scanWithDefault("Host", "localhost")
 	dbName := scanWithDefault("Database", "restaurant")
 	username := scanWithDefault("Username", "postgres")
 	fmt.Print("Password:")
-	_, err := fmt.Scanln(&password)
+	passwordByte, err := terminal.ReadPassword(int(os.Stdin.Fd()))
+	password := string(passwordByte)
 	if err != nil {
 		fmt.Println("Incorrect password.")
 		log.Fatalln(err)
